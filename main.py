@@ -209,7 +209,7 @@ if __name__ == '__main__':
             else:
                 type_spawn = random.randint(1, 4)
             if type_spawn < 4:
-                count_spawn = random.randint(5, 10) // 5
+                count_spawn = random.randint(5, 15) // 5
                 for i in range(count_spawn):
                     _ = Cactus(i * 20)
             elif type_spawn == 4:
