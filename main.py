@@ -20,7 +20,7 @@ DINO_VECTOR_Y = 0.5
 DINO_SIZE = (55, 60)
 DINO_SIZE_LAY = (63, 40)
 CACTUS_SIZE = (40, 55)
-DED_MOROZ_SIZE = (60, 30)
+DED_MOROZ_SIZE = (56, 30)
 
 
 def load_image(name, colorkey=None):
@@ -137,17 +137,17 @@ class Cactus(pygame.sprite.Sprite):
 
 
 class Dedmoroz(pygame.sprite.Sprite):
-    images = [pygame.transform.scale(load_image('ded_moroz1.png', -1), CACTUS_SIZE),
-              pygame.transform.scale(load_image('ded_moroz2.png', -1), CACTUS_SIZE),
-              pygame.transform.scale(load_image('ded_moroz3.png', -1), CACTUS_SIZE),
-              pygame.transform.scale(load_image('ded_moroz2.png', -1), CACTUS_SIZE)]
+    images = [pygame.transform.scale(load_image('ded_moroz1.png', -1), DED_MOROZ_SIZE),
+              pygame.transform.scale(load_image('ded_moroz2.png', -1), DED_MOROZ_SIZE),
+              pygame.transform.scale(load_image('ded_moroz3.png', -1), DED_MOROZ_SIZE),
+              pygame.transform.scale(load_image('ded_moroz2.png', -1), DED_MOROZ_SIZE)]
 
     def __init__(self, shift):
         super().__init__(ded_moroz_group, all_sprites)
         self.image = Dedmoroz.images[0]
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect.x, self.rect.y = 700 + shift, random.choice([200, 160, 130])
+        self.rect.x, self.rect.y = 700 + shift, random.choice([210, 170, 140])
         self.v = GAME_SPEED + 20
         self.frame = 0
 
