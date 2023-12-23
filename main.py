@@ -20,7 +20,7 @@ DINO_VECTOR_Y = 0.5
 DINO_SIZE = (55, 60)
 DINO_SIZE_LAY = (63, 40)
 CACTUS_SIZE = (40, 55)
-PTERADACTEL_SIZE = (40, 30)
+DED_MOROZ_SIZE = (60, 30)
 
 
 def load_image(name, colorkey=None):
@@ -55,17 +55,16 @@ class Dino(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x, self.rect.y = 100, 190
-        self.points = 0
+        self.score = 0
         self.frame = 0
         self.vy = 0
         self.state = 'run'
-        self.points = 0
 
     def update(self):
         global GAME_SPEED
 
         if self.state != 'die' and self.frame % 4 == 1:
-            self.points += 1
+            self.score += 1
 
         self.frame += 1
         if self.frame == 12:
@@ -85,12 +84,18 @@ class Dino(pygame.sprite.Sprite):
                 self.image = Dino.images[0]
                 self.frame = 0
 
+        die_flag = False
         for cactus in cactus_group:
             if pygame.sprite.collide_mask(self, cactus):
-                GAME_SPEED = 0
-                self.state = 'die'
-                self.image = Dino.die_img
-                self.frame = 0
+                die_flag = True
+        for ded in ded_moroz_group:
+            if pygame.sprite.collide_mask(self, ded):
+                die_flag = True
+        if die_flag:
+            GAME_SPEED = 0
+            self.state = 'die'
+            self.image = Dino.die_img
+            self.frame = 0
 
     def event(self, event):
         if event.type == pygame.KEYDOWN and event.key == K_JUMP and self.state != 'jump':
@@ -131,29 +136,29 @@ class Cactus(pygame.sprite.Sprite):
             self.kill()
 
 
-'''class Pteradactel(pygame.sprite.Sprite):
-    images = [pygame.transform.scale(load_image('pteradactel1.png', -1), CACTUS_SIZE),
-              pygame.transform.scale(load_image('pteradactel2.png', -1), CACTUS_SIZE),
-              pygame.transform.scale(load_image('pteradactel3.png', -1), CACTUS_SIZE),
-              pygame.transform.scale(load_image('pteradactel2.png', -1), CACTUS_SIZE)]
+class Dedmoroz(pygame.sprite.Sprite):
+    images = [pygame.transform.scale(load_image('ded_moroz1.png', -1), CACTUS_SIZE),
+              pygame.transform.scale(load_image('ded_moroz2.png', -1), CACTUS_SIZE),
+              pygame.transform.scale(load_image('ded_moroz3.png', -1), CACTUS_SIZE),
+              pygame.transform.scale(load_image('ded_moroz2.png', -1), CACTUS_SIZE)]
 
-    def __init__(self):
-        super().__init__(pteradactel_group, all_sprites)
-        self.image = Pteradactel.images[0]
+    def __init__(self, shift):
+        super().__init__(ded_moroz_group, all_sprites)
+        self.image = Dedmoroz.images[0]
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect.x, self.rect.y = 700, 145
-        self.v = GAME_SPEED
+        self.rect.x, self.rect.y = 700 + shift, random.choice([200, 160, 130])
+        self.v = GAME_SPEED + 20
         self.frame = 0
 
     def update(self):
-        self.v = GAME_SPEED
+        self.v = GAME_SPEED + 20
         self.frame += 1
-        if self.frame == 40:
+        if self.frame == 20:
             self.frame = 0
-        self.image = Pteradactel.images[self.frame // 10]
+        self.image = Dedmoroz.images[self.frame // 5]
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect.x -= self.v'''
+        self.rect.x -= self.v / FPS
 
 
 class Place(pygame.sprite.Sprite):
@@ -179,7 +184,7 @@ if __name__ == '__main__':
     all_sprites = pygame.sprite.Group()
     dino_group = pygame.sprite.Group()
     cactus_group = pygame.sprite.Group()
-    pteradactel_group = pygame.sprite.Group()
+    ded_moroz_group = pygame.sprite.Group()
     place_border = pygame.sprite.Group()
 
     clock = pygame.time.Clock()
@@ -189,6 +194,7 @@ if __name__ == '__main__':
     place2 = Place(699)
     spawn_distance = 0
     count_spawn = 0
+    type_spawn = 0
 
     while running:
         for event in pygame.event.get():
@@ -198,15 +204,27 @@ if __name__ == '__main__':
                 dino.event(event)
 
         if spawn_distance <= 0:
-            count_spawn = random.randint(5, 10) // 5
-            for i in range(count_spawn):
-                _ = Cactus(i * 20)
+            if dino.score <= 500:
+                type_spawn = 1
+            else:
+                type_spawn = random.randint(1, 4)
+            if type_spawn < 4:
+                count_spawn = random.randint(5, 10) // 5
+                for i in range(count_spawn):
+                    _ = Cactus(i * 20)
+            elif type_spawn == 4:
+                k = 30 if spawn_distance <= 65 else 0
+                _ = Dedmoroz(k)
             spawn_distance = random.randint(50, 120)
+
         screen.fill('#55DDFF')
+
         GAME_SPEED += 0.01
         spawn_distance -= 1
+
         all_sprites.update()
         all_sprites.draw(screen)
+
         pygame.display.flip()
         clock.tick(FPS)
     pygame.quit()
