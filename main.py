@@ -111,7 +111,10 @@ class Dino(pygame.sprite.Sprite):
 
 class Cactus(pygame.sprite.Sprite):
     images = [pygame.transform.scale(load_image('snowman1.png', -1), CACTUS_SIZE),
-              pygame.transform.scale(load_image('snowman2.png', -1), CACTUS_SIZE)]
+              pygame.transform.scale(load_image('snowman2.png', -1), CACTUS_SIZE),
+              pygame.transform.scale(load_image('tree1.png', -1), CACTUS_SIZE),
+              pygame.transform.scale(load_image('tree2.png', -1), CACTUS_SIZE),
+              pygame.transform.scale(load_image('snow.png', -1), CACTUS_SIZE)]
 
     def __init__(self, shift):
         super().__init__(cactus_group, all_sprites)
@@ -195,7 +198,7 @@ if __name__ == '__main__':
                 dino.event(event)
 
         if spawn_distance <= 0:
-            count_spawn = random.randint(2, 4) // 2
+            count_spawn = random.randint(5, 10) // 5
             for i in range(count_spawn):
                 _ = Cactus(i * 20)
             spawn_distance = random.randint(50, 120)
