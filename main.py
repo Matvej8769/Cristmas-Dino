@@ -9,7 +9,6 @@ WIDTH = 700
 HEIGHT = 300
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
-GAME_SPEED = 250
 FPS = 60
 
 K_JUMP = pygame.K_SPACE
@@ -29,7 +28,7 @@ def terminate():
 
 
 def restart():
-    global dino, place1, place2, spawn_distance, GAME_SPEED
+    global dino, place1, place2, spawn_distance, game_speed
 
     for sprite in all_sprites:
         sprite.kill()
@@ -37,7 +36,7 @@ def restart():
     place1 = Place(0)
     place2 = Place(699)
     spawn_distance = 0
-    GAME_SPEED = 250
+    game_speed = 250
 
 
 def load_image(name, colorkey=None):
@@ -78,7 +77,7 @@ class Dino(pygame.sprite.Sprite):
         self.state = 'run'
 
     def update(self):
-        global GAME_SPEED
+        global game_speed
 
         if self.state != 'die' and self.frame % 4 == 1:
             self.score += 1
@@ -109,7 +108,7 @@ class Dino(pygame.sprite.Sprite):
             if pygame.sprite.collide_mask(self, ded):
                 die_flag = True
         if die_flag:
-            GAME_SPEED = 0
+            game_speed = 0
             self.state = 'die'
             self.image = Dino.die_img
             self.frame = 0
@@ -145,10 +144,10 @@ class Cactus(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x, self.rect.y = 700 + shift, 195
-        self.v = GAME_SPEED
+        self.v = game_speed
 
     def update(self):
-        self.v = GAME_SPEED
+        self.v = game_speed
         self.rect.x -= self.v / FPS
         if self.rect.x <= -25:
             self.kill()
@@ -166,11 +165,11 @@ class Dedmoroz(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x, self.rect.y = 700 + shift, random.choice([200, 160, 125])
-        self.v = GAME_SPEED + 20
+        self.v = game_speed + 20
         self.frame = 0
 
     def update(self):
-        self.v = GAME_SPEED + 20
+        self.v = game_speed + 20
         self.frame += 1
         if self.frame == 20:
             self.frame = 0
@@ -188,10 +187,10 @@ class Place(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x, self.rect.y = x, 250
-        self.v = GAME_SPEED
+        self.v = game_speed
 
     def update(self):
-        self.v = GAME_SPEED
+        self.v = game_speed
         self.rect.x -= self.v / FPS
         if self.rect.x <= -699:
             self.rect.x = 700
@@ -279,6 +278,7 @@ if __name__ == '__main__':
     spawn_distance = 0
     count_spawn = 0
     type_spawn = 0
+    game_speed = 250
 
     start_screen()
 
@@ -305,7 +305,7 @@ if __name__ == '__main__':
 
         screen.fill('#55DDFF')
 
-        GAME_SPEED += 0.01
+        game_speed += 0.01
         spawn_distance -= 1
 
         all_sprites.update()
