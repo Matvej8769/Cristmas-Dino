@@ -20,7 +20,12 @@ DINO_VECTOR_Y = 0.5
 DINO_SIZE = (55, 60)
 DINO_SIZE_LAY = (63, 40)
 CACTUS_SIZE = (40, 55)
-DED_MOROZ_SIZE = (56, 30)
+DED_MOROZ_SIZE = (112, 60)
+
+
+def terminate():
+    pygame.quit()
+    sys.exit()
 
 
 def load_image(name, colorkey=None):
@@ -98,16 +103,16 @@ class Dino(pygame.sprite.Sprite):
             self.frame = 0
 
     def event(self, event):
-        if event.type == pygame.KEYDOWN and event.key == K_JUMP and self.state != 'jump':
+        if event.type == pygame.KEYDOWN and event.key == K_JUMP and self.state != 'jump' and self.state != 'die':
             self.vy = DINO_SPEED_Y
             self.state = 'jump'
             self.image = Dino.jump_img
             self.rect.y = 190
-        elif event.type == pygame.KEYDOWN and event.key == K_LAY and self.state != 'jump':
+        elif event.type == pygame.KEYDOWN and event.key == K_LAY and self.state != 'jump' and self.state != 'die':
             self.state = 'lay'
             self.image = Dino.down_images[0]
             self.rect.y = 210
-        elif event.type == pygame.KEYUP and event.key == K_LAY and self.state != 'jump':
+        elif event.type == pygame.KEYUP and event.key == K_LAY and self.state == 'lay':
             self.state = 'run'
             self.image = Dino.images[0]
             self.rect.y = 190
@@ -147,7 +152,7 @@ class Dedmoroz(pygame.sprite.Sprite):
         self.image = Dedmoroz.images[0]
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect.x, self.rect.y = 700 + shift, random.choice([210, 170, 140])
+        self.rect.x, self.rect.y = 700 + shift, random.choice([200, 160, 125])
         self.v = GAME_SPEED + 20
         self.frame = 0
 
@@ -179,6 +184,38 @@ class Place(pygame.sprite.Sprite):
             self.rect.x = 700
 
 
+def start_screen():
+    intro_text = ["Cristmas Dino                    Свободный режим                   Уровни", "",
+                  "Управление:",
+                  "SPACE - прыжок",
+                  "LSHIFT - нагнуться"]
+
+    fon = load_image('fon.jpg')
+    screen.blit(fon, (0, 0))
+    font = pygame.font.Font(None, 30)
+    text_coord = 50
+    for line in intro_text:
+        string_rendered = font.render(line, 1, "#000000")
+        intro_rect = string_rendered.get_rect()
+        text_coord += 10
+        intro_rect.top = text_coord
+        intro_rect.x = 10
+        text_coord += intro_rect.height
+        screen.blit(string_rendered, intro_rect)
+
+    screen.fill('#FFFFFF', (315, 100, 100, 100))
+    screen.fill('#FFFFFF', (565, 100, 100, 100))
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN and 315 <= event.pos[0] <= 415 and 100 <= event.pos[1] <= 200:
+                return
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
 if __name__ == '__main__':
     running = True
     all_sprites = pygame.sprite.Group()
@@ -195,6 +232,8 @@ if __name__ == '__main__':
     spawn_distance = 0
     count_spawn = 0
     type_spawn = 0
+
+    start_screen()
 
     while running:
         for event in pygame.event.get():
