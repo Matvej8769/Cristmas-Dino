@@ -164,7 +164,7 @@ class Dedmoroz(pygame.sprite.Sprite):
         self.image = Dedmoroz.images[0]
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect.x, self.rect.y = 700 + shift, random.choice([200, 160, 125])
+        self.rect.x, self.rect.y = 700 + shift, random.choice([200, 150, 125])
         self.v = game_speed + 20
         self.frame = 0
 
@@ -300,17 +300,24 @@ if __name__ == '__main__':
                 for i in range(count_spawn):
                     _ = Cactus(i * 20)
             elif type_spawn == 4:
-                k = 30 if spawn_distance <= 65 else 0
+                k = 40 if spawn_distance <= 65 else 0
                 _ = Dedmoroz(k)
-            spawn_distance = random.randint(50, 120)
+            spawn_distance = random.randint(50 // (game_speed // 250), 120 // (game_speed // 250))
 
         screen.fill('#55DDFF')
 
-        game_speed += 0.01
+        game_speed += 0.04
         spawn_distance -= 1
 
         all_sprites.update()
         all_sprites.draw(screen)
+
+        font = pygame.font.Font(None, 20)
+        score = font.render(str(dino.score), 1, "#000000")
+        score_rect = score.get_rect()
+        score_rect.top = 10
+        score_rect.x = 650
+        screen.blit(score, score_rect)
 
         pygame.display.flip()
         clock.tick(FPS)
