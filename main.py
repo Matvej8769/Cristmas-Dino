@@ -263,6 +263,8 @@ def death_screen():
 
 
 if __name__ == '__main__':
+    game_speed = 250
+
     running = True
     all_sprites = pygame.sprite.Group()
     dino_group = pygame.sprite.Group()
@@ -278,7 +280,6 @@ if __name__ == '__main__':
     spawn_distance = 0
     count_spawn = 0
     type_spawn = 0
-    game_speed = 250
 
     start_screen()
 
