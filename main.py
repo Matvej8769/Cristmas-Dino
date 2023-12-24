@@ -28,6 +28,18 @@ def terminate():
     sys.exit()
 
 
+def restart():
+    global dino, place1, place2, spawn_distance, GAME_SPEED
+
+    for sprite in all_sprites:
+        sprite.kill()
+    dino = Dino()
+    place1 = Place(0)
+    place2 = Place(699)
+    spawn_distance = 0
+    GAME_SPEED = 250
+
+
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
     if not os.path.isfile(fullname):
@@ -101,6 +113,7 @@ class Dino(pygame.sprite.Sprite):
             self.state = 'die'
             self.image = Dino.die_img
             self.frame = 0
+            death_screen()
 
     def event(self, event):
         if event.type == pygame.KEYDOWN and event.key == K_JUMP and self.state != 'jump' and self.state != 'die':
@@ -211,6 +224,40 @@ def start_screen():
             if event.type == pygame.QUIT:
                 terminate()
             elif event.type == pygame.MOUSEBUTTONDOWN and 315 <= event.pos[0] <= 415 and 100 <= event.pos[1] <= 200:
+                restart()
+                return
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
+def death_screen():
+    death_text = ["Вы умерли",
+                  "Счёт:",
+                  str(dino.score),
+                  "В меню (ESC)",
+                  "Возродиться (SPACE)"]
+
+    font = pygame.font.Font(None, 30)
+    text_coord = 50
+    for line in death_text:
+        string_rendered = font.render(line, 1, "#AA0000")
+        death_rect = string_rendered.get_rect()
+        text_coord += 10
+        death_rect.top = text_coord
+        death_rect.x = 260
+        text_coord += death_rect.height
+        screen.blit(string_rendered, death_rect)
+
+    all_sprites.draw(screen)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                start_screen()
+                return
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                restart()
                 return
         pygame.display.flip()
         clock.tick(FPS)
@@ -243,7 +290,7 @@ if __name__ == '__main__':
                 dino.event(event)
 
         if spawn_distance <= 0:
-            if dino.score <= 500:
+            if dino.score <= 300:
                 type_spawn = 1
             else:
                 type_spawn = random.randint(1, 4)
