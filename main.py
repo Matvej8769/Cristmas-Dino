@@ -112,6 +112,8 @@ class Dino(pygame.sprite.Sprite):
             self.state = 'die'
             self.image = Dino.die_img
             self.frame = 0
+            with open('data/statistics.txt', 'a') as file:
+                file.write(f'{str(self.score)}\n')
             death_screen()
 
     def event(self, event):
@@ -179,7 +181,7 @@ class Dedmoroz(pygame.sprite.Sprite):
 
 
 class Place(pygame.sprite.Sprite):
-    image = pygame.transform.scale(load_image('place.png'), (WIDTH, 50))
+    image = pygame.transform.scale(load_image('place.png'), (WIDTH + 50, 50))
 
     def __init__(self, x):
         super().__init__(place_border, all_sprites)
@@ -196,48 +198,105 @@ class Place(pygame.sprite.Sprite):
             self.rect.x = 700
 
 
+def statistics_screen():
+    screen.fill('#CCCCCC')
+    screen.fill('#FFFFFF', (100, 50, 500, 200))
+
+    with open('data/statistics.txt', 'r') as file:
+        stat = list(map(int, file.read().split('\n')[:-1]))
+        max_score = max(stat)
+        min_score = min(stat)
+        sum_score = sum(stat)
+        count_games = len(stat)
+        av_score = sum_score / count_games
+
+    statistics_text = ["Статистика игрока:",
+                       "Лучший результат: {}".format(max_score),
+                       "Худший результат: {}".format(min_score),
+                       "Средний результат: {}".format(av_score),
+                       "Всего набрано: {}".format(sum_score),
+                       "Попыток сделано: {}".format(count_games)]
+
+    font = pygame.font.Font(None, 30)
+    text_coord = 60
+    for line in statistics_text:
+        string_rendered = font.render(line, 1, "#000000")
+        stat_rect = string_rendered.get_rect()
+        text_coord += 10
+        stat_rect.top = text_coord
+        stat_rect.x = 110
+        text_coord += stat_rect.height
+        screen.blit(string_rendered, stat_rect)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.KEYDOWN:
+                return
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
 def start_screen():
     intro_text = ["Cristmas Dino                    Свободный режим                   Уровни", "",
                   "Управление:",
                   "SPACE - прыжок",
                   "LSHIFT - нагнуться"]
-
-    fon = load_image('fon.jpg')
-    screen.blit(fon, (0, 0))
-    font = pygame.font.Font(None, 30)
-    text_coord = 50
-    for line in intro_text:
-        string_rendered = font.render(line, 1, "#000000")
-        intro_rect = string_rendered.get_rect()
-        text_coord += 10
-        intro_rect.top = text_coord
-        intro_rect.x = 10
-        text_coord += intro_rect.height
-        screen.blit(string_rendered, intro_rect)
-
-    screen.fill('#FFFFFF', (315, 100, 100, 100))
-    screen.fill('#FFFFFF', (565, 100, 100, 100))
+    draw_flag = True
 
     while True:
+        if draw_flag:
+            screen.fill('#000000')
+            fon = load_image('fon.jpg')
+            screen.blit(fon, (0, 0))
+
+            font = pygame.font.Font(None, 30)
+            text_coord = 50
+            for line in intro_text:
+                string_rendered = font.render(line, 1, "#000000")
+                intro_rect = string_rendered.get_rect()
+                text_coord += 10
+                intro_rect.top = text_coord
+                intro_rect.x = 10
+                text_coord += intro_rect.height
+                screen.blit(string_rendered, intro_rect)
+
+            screen.fill('#FFFFFF', (315, 100, 100, 100))
+            screen.fill('#FFFFFF', (565, 100, 100, 100))
+            statistics_img = pygame.transform.scale(load_image('statistics.png', -1), (30, 30))
+            screen.blit(statistics_img, (660, 10))
+
+            draw_flag = False
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             elif event.type == pygame.MOUSEBUTTONDOWN and 315 <= event.pos[0] <= 415 and 100 <= event.pos[1] <= 200:
                 restart()
                 return
+            elif event.type == pygame.MOUSEBUTTONDOWN and 660 <= event.pos[0] <= 700 and 0 <= event.pos[1] <= 40:
+                statistics_screen()
+                draw_flag = True
         pygame.display.flip()
         clock.tick(FPS)
 
 
 def death_screen():
-    death_text = ["Вы умерли",
-                  "Счёт:",
+    with open('data/statistics.txt', 'r') as file:
+        max_score = max(map(int, file.read().split('\n')[:-1]))
+
+    all_sprites.draw(screen)
+
+    death_text = ["Счёт:",
                   str(dino.score),
+                  "Лучший счёт:",
+                  str(max_score),
                   "В меню (ESC)",
                   "Возродиться (SPACE)"]
 
     font = pygame.font.Font(None, 30)
-    text_coord = 50
+    text_coord = 20
     for line in death_text:
         string_rendered = font.render(line, 1, "#AA0000")
         death_rect = string_rendered.get_rect()
@@ -247,7 +306,6 @@ def death_screen():
         text_coord += death_rect.height
         screen.blit(string_rendered, death_rect)
 
-    all_sprites.draw(screen)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -302,7 +360,7 @@ if __name__ == '__main__':
             elif type_spawn == 4:
                 k = 40 if spawn_distance <= 65 else 0
                 _ = Dedmoroz(k)
-            spawn_distance = random.randint(50 // (game_speed // 250), 120 // (game_speed // 250))
+            spawn_distance = random.randint(50 // (game_speed // 500 + 1), 120 // (game_speed // 250))
 
         screen.fill('#55DDFF')
 
