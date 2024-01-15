@@ -218,7 +218,7 @@ def statistics_screen():
                        "Попыток сделано: {}".format(count_games)]
 
     font = pygame.font.Font(None, 30)
-    text_coord = 60
+    text_coord = 55
     for line in statistics_text:
         string_rendered = font.render(line, 1, "#000000")
         stat_rect = string_rendered.get_rect()
@@ -347,6 +347,8 @@ if __name__ == '__main__':
                 running = False
             if event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
                 dino.event(event)
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                start_screen()
 
         if spawn_distance <= 0:
             if dino.score <= 300:
