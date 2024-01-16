@@ -78,6 +78,7 @@ class Dino(pygame.sprite.Sprite):
         self.score = 0
         self.frame = 0
         self.vy = 0
+        self.vector_y = DINO_VECTOR_Y
         self.state = 'run'
 
     def update(self):
@@ -97,13 +98,15 @@ class Dino(pygame.sprite.Sprite):
 
         if self.state == 'jump':
             self.rect.y -= self.vy
-            self.vy -= DINO_VECTOR_Y
-            if self.rect.y == 190:
+            self.vy -= self.vector_y
+            if self.rect.y >= 190:
                 self.vy = 0
+                self.rect.y = 190
                 self.state = 'run'
                 self.image = Dino.images[0]
                 self.frame = 0
                 create_particles((130, 251))
+                self.vector_y = DINO_VECTOR_Y
 
         die_flag = False
         for cactus in cactus_group:
@@ -133,6 +136,10 @@ class Dino(pygame.sprite.Sprite):
             self.state = 'lay'
             self.image = Dino.down_images[0]
             self.rect.y = 210
+        elif event.type == pygame.KEYDOWN and event.key == K_LAY and self.state == 'jump':
+            self.vector_y = DINO_VECTOR_Y * 2
+        elif event.type == pygame.KEYUP and event.key == K_LAY and self.state == 'jump':
+            self.vector_y = DINO_VECTOR_Y
         elif event.type == pygame.KEYUP and event.key == K_LAY and self.state == 'lay':
             self.state = 'run'
             self.image = Dino.images[0]
