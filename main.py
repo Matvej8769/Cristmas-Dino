@@ -64,6 +64,10 @@ class Dino(pygame.sprite.Sprite):
     jump_img = pygame.transform.scale(load_image('dino_jump.png', -1), DINO_SIZE)
     down_images = [pygame.transform.scale(load_image('dino_lay1.png', -1), DINO_SIZE_LAY),
                    pygame.transform.scale(load_image('dino_lay2.png', -1), DINO_SIZE_LAY)]
+    jump_sound = pygame.mixer.Sound('data/jump.mp3')
+    jump_sound.set_volume(0.5)
+    death_sound = pygame.mixer.Sound('data/death.mp3')
+    death_sound.set_volume(0.5)
 
     def __init__(self):
         super().__init__(dino_group, all_sprites)
@@ -109,6 +113,7 @@ class Dino(pygame.sprite.Sprite):
             if pygame.sprite.collide_mask(self, ded):
                 die_flag = True
         if die_flag:
+            Dino.death_sound.play()
             game_speed = 0
             self.state = 'die'
             self.image = Dino.die_img
@@ -123,6 +128,7 @@ class Dino(pygame.sprite.Sprite):
             self.state = 'jump'
             self.image = Dino.jump_img
             self.rect.y = 190
+            Dino.jump_sound.play()
         elif event.type == pygame.KEYDOWN and event.key == K_LAY and self.state != 'jump' and self.state != 'die':
             self.state = 'lay'
             self.image = Dino.down_images[0]
