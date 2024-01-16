@@ -99,6 +99,7 @@ class Dino(pygame.sprite.Sprite):
                 self.state = 'run'
                 self.image = Dino.images[0]
                 self.frame = 0
+                create_particles((130, 251))
 
         die_flag = False
         for cactus in cactus_group:
@@ -196,6 +197,37 @@ class Place(pygame.sprite.Sprite):
         self.rect.x -= self.v / FPS
         if self.rect.x <= -699:
             self.rect.x = 700
+
+
+class Particle(pygame.sprite.Sprite):
+    img = [pygame.transform.scale(load_image("particle1.png"), (6, 6)),
+           pygame.transform.scale(load_image("particle2.png"), (3, 3)),
+           pygame.transform.scale(load_image("particle3.png"), (3, 3))]
+
+    def __init__(self, pos, dx, dy):
+        super().__init__(all_sprites)
+        self.image = random.choice(Particle.img)
+        self.rect = self.image.get_rect()
+
+        self.velocity = [dx, dy]
+        self.rect.x, self.rect.y = pos
+
+        self.gravity = 1
+
+    def update(self):
+        self.velocity[1] += self.gravity
+        self.rect.x += self.velocity[0]
+        self.rect.y += self.velocity[1]
+        if self.rect.y >= 250:
+            self.kill()
+
+
+def create_particles(position):
+    particle_count = 20
+    vx = range(int(-game_speed // 60 - 5), int(-game_speed // 60 + 5))
+    vy = range(-10, -5)
+    for _ in range(particle_count):
+        Particle(position, random.choice(vx), random.choice(vy))
 
 
 def statistics_screen():
