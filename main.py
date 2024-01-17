@@ -20,6 +20,7 @@ DINO_SIZE = (55, 60)
 DINO_SIZE_LAY = (63, 40)
 CACTUS_SIZE = (40, 55)
 DED_MOROZ_SIZE = (112, 60)
+FINISH_SIZE = (50, 100)
 
 
 def terminate():
@@ -28,7 +29,7 @@ def terminate():
 
 
 def restart():
-    global dino, place1, place2, spawn_distance, game_speed
+    global dino, place1, place2, spawn_distance, game_speed, n, end_flag
 
     for sprite in all_sprites:
         sprite.kill()
@@ -37,6 +38,8 @@ def restart():
     place2 = Place(699)
     spawn_distance = 0
     game_speed = 250
+    n = -1
+    end_flag = False
 
 
 def load_image(name, colorkey=None):
@@ -53,6 +56,15 @@ def load_image(name, colorkey=None):
     else:
         image = image.convert_alpha()
     return image
+
+
+def load_level(filename):
+    filename = "data/" + filename
+
+    with open(filename, 'r') as mapFile:
+        level_map = mapFile.read().split('-')
+
+    return level_map
 
 
 class Dino(pygame.sprite.Sprite):
@@ -125,6 +137,13 @@ class Dino(pygame.sprite.Sprite):
                 file.write(f'{str(self.score)}\n')
             death_screen()
 
+        for finish in finish_sprite:
+            if pygame.sprite.collide_mask(self, finish):
+                game_speed = 0
+                self.state = 'die'
+                self.frame = 0
+                death_screen() # Пока что, для теста
+
     def event(self, event):
         if event.type == pygame.KEYDOWN and event.key == K_JUMP and self.state != 'jump' and self.state != 'die':
             self.vy = DINO_SPEED_Y
@@ -154,9 +173,12 @@ class Cactus(pygame.sprite.Sprite):
               pygame.transform.scale(load_image('tree2.png', -1), CACTUS_SIZE),
               pygame.transform.scale(load_image('snow.png', -1), CACTUS_SIZE)]
 
-    def __init__(self, shift):
+    def __init__(self, shift, img=-1):
         super().__init__(cactus_group, all_sprites)
-        self.image = Cactus.images[random.randint(0, len(Cactus.images) - 1)]
+        if img == -1:
+            self.image = Cactus.images[random.randint(0, len(Cactus.images) - 1)]
+        else:
+            self.image = Cactus.images[img]
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x, self.rect.y = 700 + shift, 195
@@ -175,12 +197,16 @@ class Dedmoroz(pygame.sprite.Sprite):
               pygame.transform.scale(load_image('ded_moroz3.png', -1), DED_MOROZ_SIZE),
               pygame.transform.scale(load_image('ded_moroz2.png', -1), DED_MOROZ_SIZE)]
 
-    def __init__(self, shift):
+    def __init__(self, shift, pos=-1):
         super().__init__(ded_moroz_group, all_sprites)
         self.image = Dedmoroz.images[0]
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect.x, self.rect.y = 700 + shift, random.choice([200, 150, 125])
+        self.rect.x = 700 + shift
+        if pos == -1:
+            self.rect.y = random.choice([200, 150, 125])
+        else:
+            self.rect.y = pos
         self.v = game_speed + 20
         self.frame = 0
 
@@ -235,6 +261,22 @@ class Particle(pygame.sprite.Sprite):
             self.kill()
 
 
+class Finish(pygame.sprite.Sprite):
+    img = pygame.transform.scale(load_image("finish.png", -1), FINISH_SIZE)
+
+    def __init__(self):
+        super().__init__(all_sprites, finish_sprite)
+        self.image = Finish.img
+        self.rect = self.image.get_rect()
+        self.rect.x, self.rect.y = 700, 155
+        self.mask = pygame.mask.from_surface(self.image)
+        self.v = game_speed
+
+    def update(self):
+        self.v = game_speed
+        self.rect.x -= self.v / FPS
+
+
 def create_particles(position):
     particle_count = 20
     vx = range(int(-game_speed // 60 - 5), int(-game_speed // 60 + 5))
@@ -284,6 +326,8 @@ def statistics_screen():
 
 
 def start_screen():
+    global mode, level
+
     intro_text = ["Cristmas Dino                    Свободный режим                   Уровни", "",
                   "Управление:",
                   "SPACE - прыжок",
@@ -318,6 +362,13 @@ def start_screen():
             if event.type == pygame.QUIT:
                 terminate()
             elif event.type == pygame.MOUSEBUTTONDOWN and 315 <= event.pos[0] <= 415 and 100 <= event.pos[1] <= 200:
+                restart()
+                mode = 'Free'
+                return
+            # Пока что тестирую загрузку уровней
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_RSHIFT:
+                mode = 'test_level.txt'
+                level = load_level(mode)
                 restart()
                 return
             elif event.type == pygame.MOUSEBUTTONDOWN and 660 <= event.pos[0] <= 700 and 0 <= event.pos[1] <= 40:
@@ -374,6 +425,7 @@ if __name__ == '__main__':
     cactus_group = pygame.sprite.Group()
     ded_moroz_group = pygame.sprite.Group()
     place_border = pygame.sprite.Group()
+    finish_sprite = pygame.sprite.Group()
 
     clock = pygame.time.Clock()
 
@@ -383,6 +435,11 @@ if __name__ == '__main__':
     spawn_distance = 0
     count_spawn = 0
     type_spawn = 0
+
+    mode = ''
+    level = []
+    n = -1
+    end_flag = False
 
     start_screen()
 
@@ -396,22 +453,49 @@ if __name__ == '__main__':
                 start_screen()
 
         if spawn_distance <= 0:
-            if dino.score <= 300:
-                type_spawn = 1
-            else:
-                type_spawn = random.randint(1, 4)
-            if type_spawn < 4:
-                count_spawn = random.randint(5, 15) // 5
-                for i in range(count_spawn):
-                    _ = Cactus(i * 20)
-            elif type_spawn == 4:
-                k = 40 if spawn_distance <= 65 else 0
-                _ = Dedmoroz(k)
-            spawn_distance = random.randint(50 // (game_speed // 500 + 1), 120 // (game_speed // 250))
+            if mode == 'Free':
+                if dino.score <= 300:
+                    type_spawn = 1
+                else:
+                    type_spawn = random.randint(1, 4)
+                if type_spawn < 4:
+                    count_spawn = random.randint(5, 15) // 5
+                    for i in range(count_spawn):
+                        _ = Cactus(i * 20)
+                elif type_spawn == 4:
+                    k = 40 if spawn_distance <= 65 else 0
+                    _ = Dedmoroz(k)
+                spawn_distance = random.randint(50 // (game_speed // 500 + 1), 120 // (game_speed // 250))
+            elif not end_flag:
+                n += 1
+                if 'S' in level[n]:
+                    for i in range(level[n].count('S')):
+                        _ = Cactus(i * 20, 0)
+                elif 's' in level[n]:
+                    for i in range(level[n].count('s')):
+                        _ = Cactus(i * 20, 1)
+                elif 'T' in level[n]:
+                    for i in range(level[n].count('T')):
+                        _ = Cactus(i * 20, 2)
+                elif 't' in level[n]:
+                    for i in range(level[n].count('t')):
+                        _ = Cactus(i * 20, 3)
+                elif 'c' in level[n]:
+                    for i in range(level[n].count('c')):
+                        _ = Cactus(i * 20, 4)
+                elif 'P' in level[n]:
+                    _ = Dedmoroz(0, [200, 150, 125][int(level[n][-1])])
+                elif level[n] == 'F':
+                    _ = Finish()
+                    end_flag = True
+                if not end_flag:
+                    n += 1
+                    spawn_distance = int(level[n])
 
         screen.fill('#55DDFF')
 
-        game_speed += 0.04
+        if mode == 'Free':
+            game_speed += 0.04
         spawn_distance -= 1
 
         all_sprites.update()
