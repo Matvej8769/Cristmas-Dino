@@ -133,8 +133,9 @@ class Dino(pygame.sprite.Sprite):
             self.state = 'die'
             self.image = Dino.die_img
             self.frame = 0
-            with open('data/statistics.txt', 'a') as file:
-                file.write(f'{str(self.score)}\n')
+            if mode == 'Free':
+                with open('data/statistics.txt', 'a') as file:
+                    file.write(f'{str(self.score)}\n')
             death_screen()
 
         for finish in finish_sprite:
