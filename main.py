@@ -365,11 +365,8 @@ def start_screen():
                 restart()
                 mode = 'Free'
                 return
-            # Пока что тестирую загрузку уровней
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_RSHIFT:
-                mode = 'test_level.txt'
-                level = load_level(mode)
-                restart()
+            elif event.type == pygame.MOUSEBUTTONDOWN and 565 <= event.pos[0] <= 665 and 100 <= event.pos[1] <= 200:
+                levels_screen()
                 return
             elif event.type == pygame.MOUSEBUTTONDOWN and 660 <= event.pos[0] <= 700 and 0 <= event.pos[1] <= 40:
                 statistics_screen()
@@ -443,6 +440,59 @@ def win_screen():
                 start_screen()
                 return
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                restart()
+                return
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
+def levels_screen():
+    global mode, level
+
+    intro_text = ["1               2               3              4               5"]
+    draw_flag = True
+
+    while True:
+        if draw_flag:
+            screen.fill('#000000')
+            fon = load_image('fon.jpg')
+            screen.blit(fon, (0, 0))
+
+            screen.fill('#FFFFFF', (10, 10, 50, 50))
+            screen.fill('#FFFFFF', (110, 10, 50, 50))
+            screen.fill('#FFFFFF', (210, 10, 50, 50))
+            screen.fill('#FFFFFF', (310, 10, 50, 50))
+            screen.fill('#FFFFFF', (410, 10, 50, 50))
+
+            font = pygame.font.Font(None, 30)
+            text_coord = 27
+            for line in intro_text:
+                string_rendered = font.render(line, 1, "#000000")
+                intro_rect = string_rendered.get_rect()
+                intro_rect.top = text_coord
+                intro_rect.x = 29
+                text_coord += intro_rect.height
+                screen.blit(string_rendered, intro_rect)
+                text_coord += 70
+
+            draw_flag = False
+
+        for event in pygame.event.get():
+            mode = ''
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN and 10 <= event.pos[0] <= 60 and 10 <= event.pos[1] <= 60:
+                mode = 'level1.txt'
+            elif event.type == pygame.MOUSEBUTTONDOWN and 110 <= event.pos[0] <= 160 and 10 <= event.pos[1] <= 60:
+                mode = 'level2.txt'
+            elif event.type == pygame.MOUSEBUTTONDOWN and 210 <= event.pos[0] <= 260 and 10 <= event.pos[1] <= 60:
+                mode = 'level3.txt'
+            elif event.type == pygame.MOUSEBUTTONDOWN and 310 <= event.pos[0] <= 360 and 10 <= event.pos[1] <= 60:
+                mode = 'level4.txt'
+            elif event.type == pygame.MOUSEBUTTONDOWN and 410 <= event.pos[0] <= 460 and 10 <= event.pos[1] <= 60:
+                mode = 'level5.txt'
+            if mode:
+                level = load_level(mode)
                 restart()
                 return
         pygame.display.flip()
