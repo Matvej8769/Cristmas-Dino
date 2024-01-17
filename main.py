@@ -142,7 +142,7 @@ class Dino(pygame.sprite.Sprite):
                 game_speed = 0
                 self.state = 'die'
                 self.frame = 0
-                death_screen() # Пока что, для теста
+                win_screen()
 
     def event(self, event):
         if event.type == pygame.KEYDOWN and event.key == K_JUMP and self.state != 'jump' and self.state != 'die':
@@ -401,6 +401,39 @@ def death_screen():
         death_rect.x = 260
         text_coord += death_rect.height
         screen.blit(string_rendered, death_rect)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                start_screen()
+                return
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                restart()
+                return
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
+def win_screen():
+    all_sprites.draw(screen)
+
+    win_text = ["Поздравляю!",
+                "Вы прошли этот уровень!",
+                "В меню (ESC)",
+                "Начать заного (SPACE)"]
+
+    font = pygame.font.Font(None, 30)
+    text_coord = 20
+    for line in win_text:
+        string_rendered = font.render(line, 1, "#00AA00")
+        win_rect = string_rendered.get_rect()
+        text_coord += 10
+        win_rect.top = text_coord
+        win_rect.x = 260
+        text_coord += win_rect.height
+        screen.blit(string_rendered, win_rect)
 
     while True:
         for event in pygame.event.get():
